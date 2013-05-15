@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Tom Taylor"]
   s.email       = ["tom@newspaperclub.com"]
   s.homepage    = "http://www.newspaperclub.com"
-  s.summary     = "Checks a PDF for margin spacing"
+  s.summary     = "Simple library to checks whether the margins are clear in a PDF"
 
   s.files = Dir["lib/**/*"] + ["Rakefile", "README.md"]
   s.test_files = Dir["test/**/*"]

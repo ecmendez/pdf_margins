@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = PDF::Margins::VERSION
   s.authors     = ["Tom Taylor"]
   s.email       = ["tom@newspaperclub.com"]
-  s.homepage    = "http://www.newspaperclub.com"
+  s.homepage    = "https://github.com/newspaperclub/pdf_margins"
   s.summary     = "Simple library to checks whether the margins are clear in a PDF"
   s.license     = "MIT"
 

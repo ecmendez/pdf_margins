@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.email       = ["tom@newspaperclub.com"]
   s.homepage    = "http://www.newspaperclub.com"
   s.summary     = "Simple library to checks whether the margins are clear in a PDF"
+  s.license     = "MIT"
 
   s.files = Dir["lib/**/*"] + ["Rakefile", "README.md"]
   s.test_files = Dir["test/**/*"]

@@ -10,3 +10,10 @@ Depends on RMagick, and thus requires a Ruby interpreter that supports
 C extensions, such as MRI.
 
 Written by [Tom Taylor](http://scraplab.net), [Newspaper Club](http://www.newspaperclub.com).
+
+Example
+--
+
+    # measurements in mm, ordered top, right, bottom, left (same as CSS)
+    checker = PDF::Margins::Checker.new('example.pdf', 10, 10, 10, 10)
+    puts checker.issues.inspect

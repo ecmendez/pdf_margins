@@ -12,15 +12,15 @@ module PDF
       SCALE_MULTIPLIER = 1 
       RESOLUTION = DEFAULT_RESOLUTION * SCALE_MULTIPLIER
 
-      attr_reader :file, :top_margin, :left_margin, :bottom_margin, :right_margin
+      attr_reader :file, :top_margin, :right_margin, :bottom_margin, :left_margin
 
       # Dimensions are in mm, to be converted to PDF points later.
-      def initialize(file, top_margin, left_margin, bottom_margin, right_margin)
+      def initialize(file, top_margin, right_margin, bottom_margin, left_margin)
         @file          = file
         @top_margin    = top_margin
-        @left_margin   = left_margin
-        @bottom_margin = bottom_margin
         @right_margin  = right_margin
+        @bottom_margin = bottom_margin
+        @left_margin   = left_margin
       end
 
       def issues

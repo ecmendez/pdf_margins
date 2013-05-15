@@ -1,0 +1,20 @@
+PATH
+  remote: .
+  specs:
+    pdf_margins (0.0.1)
+      rmagick (~> 2.13.2)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rake (10.0.4)
+    rmagick (2.13.2)
+    test-unit (2.5.4)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  pdf_margins!
+  rake
+  test-unit

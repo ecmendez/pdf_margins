@@ -1,6 +1,9 @@
 pdf/margins
 ==
 
+[![Build
+Status](https://travis-ci.org/newspaperclub/pdf_margins.png)](https://travis-ci.org/newspaperclub/pdf_margins)
+
 Simple Ruby library to check a PDF for clear margin areas, by rendering to
 a CMYK bitmap, ensuring that the pixel area defined by each margin is empty.
 It's pretty slow, but this is a lot easier than attempting to work out which

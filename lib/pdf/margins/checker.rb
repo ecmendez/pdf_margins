@@ -12,15 +12,17 @@ module PDF
       SCALE_MULTIPLIER = 1 
       RESOLUTION = DEFAULT_RESOLUTION * SCALE_MULTIPLIER
 
-      attr_reader :file, :top_margin, :right_margin, :bottom_margin, :left_margin
+      attr_reader :file, :top_margin, :right_margin, :bottom_margin, :left_margin, :spreads
 
-      # Dimensions are in mm, to be converted to PDF points later.
-      def initialize(file, top_margin, right_margin, bottom_margin, left_margin)
+      # Dimensions are in mm, to be converted to PDF points later. Pass spreads
+      # as true to check left and right margins of spreads, not pages.
+      def initialize(file, top_margin, right_margin, bottom_margin, left_margin, spreads=false)
         @file          = file
         @top_margin    = top_margin
         @right_margin  = right_margin
         @bottom_margin = bottom_margin
         @left_margin   = left_margin
+        @spreads       = spreads
       end
 
       def issues
@@ -45,18 +47,12 @@ module PDF
               page_issues << Issue.new(page_number, :bottom)
             end
 
-            # Newspaper Club assumes that pages are two up, printed as spreads,
-            # so we only check right margins on odd numbered pages, and left
-            # margins on even numbered pages. This should probably be
-            # a configurable option for other types of printing.
-            if page_number % 2 == 0
-              if dirty_pixels?(left_pixels(image, left_margin))
-                page_issues << Issue.new(page_number, :left)
-              end
-            else
-              if dirty_pixels?(right_pixels(image, right_margin))
-                page_issues << Issue.new(page_number, :right)
-              end
+            if (!spreads || page_number % 2 == 0) && dirty_pixels?(left_pixels(image, left_margin))
+              page_issues << Issue.new(page_number, :left)
+            end
+            
+            if (!spreads || page_number % 2 != 0) && dirty_pixels?(right_pixels(image, right_margin))
+              page_issues << Issue.new(page_number, :right)
             end
           end
         end.flatten

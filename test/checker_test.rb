@@ -2,34 +2,58 @@ require 'test_helper'
 
 class CheckerTest < Test::Unit::TestCase
 
-  test "PDF with clear margins" do
-    checker = PDF::Margins::Checker.new(pdf_path('clear-margins.pdf'), 10, 10, 10, 10)
+  test "PDF as pages with clear margins tested as pages" do
+    checker = PDF::Margins::Checker.new(pdf_path('clear-margins-pages.pdf'), 15, 15, 15, 15)
     assert_equal [], checker.issues
   end
 
-  test "PDF with dirty left margin on page 1" do
-    checker = PDF::Margins::Checker.new(pdf_path('left-margin-only.pdf'), 10, 10, 10, 10)
+  test "PDF as spreads with clear margins tested as spreads" do
+    checker = PDF::Margins::Checker.new(pdf_path('clear-margins-spreads.pdf'), 15, 15, 15, 15, true)
     assert_equal [], checker.issues
   end
 
-  test "PDF with dirty left margin on page 2" do
-    checker = PDF::Margins::Checker.new(pdf_path('p2-left-margin-only.pdf'), 10, 10, 10, 10)
-    assert_equal [PDF::Margins::Issue.new(2, :left)], checker.issues
+  test "PDF as spreads with clear margins tested as pages" do
+    checker = PDF::Margins::Checker.new(pdf_path('clear-margins-spreads.pdf'), 15, 15, 15, 15)
+    assert_equal [
+      PDF::Margins::Issue.new(1, :left),
+      PDF::Margins::Issue.new(2, :right),
+      PDF::Margins::Issue.new(3, :left),
+      PDF::Margins::Issue.new(4, :right)
+    ], checker.issues
   end
 
-  test "PDF with dirty right margin on page 1" do
-    checker = PDF::Margins::Checker.new(pdf_path('right-margin-only.pdf'), 10, 10, 10, 10)
-    assert_equal [PDF::Margins::Issue.new(1, :right)], checker.issues
+  test "PDF as pages with dirty left margin" do
+    checker = PDF::Margins::Checker.new(pdf_path('left-margin-only.pdf'), 15, 15, 15, 15)
+    assert_equal [
+      PDF::Margins::Issue.new(1, :left)
+    ], checker.issues
   end
 
-  test "PDF with dirty top margin on page 1" do
-    checker = PDF::Margins::Checker.new(pdf_path('top-margin-only.pdf'), 10, 10, 10, 10)
-    assert_equal [PDF::Margins::Issue.new(1, :top)], checker.issues
+  test "PDF as pages with dirty right margin" do
+    checker = PDF::Margins::Checker.new(pdf_path('right-margin-only.pdf'), 15, 15, 15, 15)
+    assert_equal [
+      PDF::Margins::Issue.new(1, :right)
+    ], checker.issues
   end
 
-  test "PDF with dirty bottom margin on page 1" do
-    checker = PDF::Margins::Checker.new(pdf_path('bottom-margin-only.pdf'), 10, 10, 10, 10)
-    assert_equal [PDF::Margins::Issue.new(1, :bottom)], checker.issues
+  test "PDF with dirty top margin as spreads" do
+    checker = PDF::Margins::Checker.new(pdf_path('top-margin-only.pdf'), 15, 15, 15, 15, true)
+    assert_equal [
+      PDF::Margins::Issue.new(1, :top),
+      PDF::Margins::Issue.new(2, :top),
+      PDF::Margins::Issue.new(3, :top),
+      PDF::Margins::Issue.new(4, :top)
+    ], checker.issues
+  end
+
+  test "PDF with dirty bottom margin as spreads" do
+    checker = PDF::Margins::Checker.new(pdf_path('bottom-margin-only.pdf'), 15, 15, 15, 15, true)
+    assert_equal [
+      PDF::Margins::Issue.new(1, :bottom),
+      PDF::Margins::Issue.new(2, :bottom),
+      PDF::Margins::Issue.new(3, :bottom),
+      PDF::Margins::Issue.new(4, :bottom)
+    ], checker.issues
   end
 
 end

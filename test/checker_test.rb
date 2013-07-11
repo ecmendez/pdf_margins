@@ -56,4 +56,24 @@ class CheckerTest < Test::Unit::TestCase
     ], checker.issues
   end
 
+  test "PDF with dirty top margin as pages" do
+    checker = PDF::Margins::Checker.new(pdf_path('top-margin-only.pdf'), 15, 15, 15, 15)
+    assert_equal [
+      PDF::Margins::Issue.new(1, :top),
+      PDF::Margins::Issue.new(2, :top),
+      PDF::Margins::Issue.new(3, :top),
+      PDF::Margins::Issue.new(4, :top)
+    ], checker.issues
+  end
+
+  test "PDF with dirty bottom margin as pages" do
+    checker = PDF::Margins::Checker.new(pdf_path('bottom-margin-only.pdf'), 15, 15, 15, 15)
+    assert_equal [
+      PDF::Margins::Issue.new(1, :bottom),
+      PDF::Margins::Issue.new(2, :bottom),
+      PDF::Margins::Issue.new(3, :bottom),
+      PDF::Margins::Issue.new(4, :bottom)
+    ], checker.issues
+  end
+
 end

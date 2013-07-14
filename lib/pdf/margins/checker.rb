@@ -1,5 +1,7 @@
 require 'pdf/margins/issue'
-require 'RMagick'
+require 'chunky_png'
+require 'oily_png'
+require 'tmpdir'
 
 module PDF
   module Margins
@@ -12,12 +14,12 @@ module PDF
       SCALE_MULTIPLIER = 1 
       RESOLUTION = DEFAULT_RESOLUTION * SCALE_MULTIPLIER
 
-      attr_reader :file, :top_margin, :right_margin, :bottom_margin, :left_margin, :spreads
+      attr_reader :file_path, :top_margin, :right_margin, :bottom_margin, :left_margin, :spreads
 
       # Dimensions are in mm, to be converted to PDF points later. Pass spreads
       # as true to check left and right margins of spreads, not pages.
-      def initialize(file, top_margin, right_margin, bottom_margin, left_margin, spreads=false)
-        @file          = file
+      def initialize(file_path, top_margin, right_margin, bottom_margin, left_margin, spreads=false)
+        @file_path     = file_path
         @top_margin    = top_margin
         @right_margin  = right_margin
         @bottom_margin = bottom_margin
@@ -26,36 +28,41 @@ module PDF
       end
 
       def issues
-        image_list = Magick::Image.read(file) do
-          # Force CMYK colorspace, because ImageMagick autodetects PDF colorspace
-          # depending on the contents of the file. By forcing the colorspace we
-          # ensure that the subsequent checks in the `dirty_pixels?` method work.
-          self.colorspace = Magick::CMYKColorspace
-          self.density    = RESOLUTION
-          self.antialias  = false
-        end
+        temp_dir_path = Dir.mktmpdir("pdf_margins")
 
-        image_list.each_with_index.map do |image, index|
+        begin
+          # This produces greyscale PNGs - we throw the colour away because we
+          # don't need it to check for margins.
+          system("mudraw -g -b 0 -r #{RESOLUTION} -o #{temp_dir_path}/%d.png #{file_path}") || raise
 
-          page_number = index + 1
-          [].tap do |page_issues|
-            if dirty_pixels?(top_pixels(image, top_margin))
-              page_issues << Issue.new(page_number, :top)
+          issues = []
+
+          Dir.glob("#{temp_dir_path}/*.png").each_with_index do |png_path, index|
+            image = ChunkyPNG::Image.from_file(png_path)
+            page_number = index + 1
+
+            if dirty_top_margin?(image, top_margin)
+              issues << Issue.new(page_number, :top)
             end
 
-            if dirty_pixels?(bottom_pixels(image, bottom_margin))
-              page_issues << Issue.new(page_number, :bottom)
+            if dirty_bottom_margin?(image, bottom_margin)
+              issues << Issue.new(page_number, :bottom)
             end
 
-            if (!spreads || page_number % 2 == 0) && dirty_pixels?(left_pixels(image, left_margin))
-              page_issues << Issue.new(page_number, :left)
+            if (!spreads || page_number % 2 == 0) && dirty_left_margin?(image, left_margin)
+              issues << Issue.new(page_number, :left)
             end
             
-            if (!spreads || page_number % 2 != 0) && dirty_pixels?(right_pixels(image, right_margin))
-              page_issues << Issue.new(page_number, :right)
+            if (!spreads || page_number % 2 != 0) && dirty_right_margin?(image, right_margin)
+              issues << Issue.new(page_number, :right)
             end
           end
-        end.flatten
+
+        ensure
+          FileUtils.remove_entry(temp_dir_path)
+        end
+
+        return issues
       end
 
       private
@@ -64,31 +71,38 @@ module PDF
         (mm * MM_TO_PTS * SCALE_MULTIPLIER).floor
       end
 
-      def top_pixels(image, mm)
-        width_px = mm_to_pixels(mm)
-        image.get_pixels(0, 0, image.columns, width_px)
+      def dirty_top_margin?(image, mm)
+        px = mm_to_pixels(mm)
+        dirty_pixels?(image, 0, px-1, 0, image.width-1)
       end
 
-      def left_pixels(image, mm)
-        width_px = mm_to_pixels(mm)
-        image.get_pixels(0, 0, width_px, image.rows)
+      def dirty_left_margin?(image, mm)
+        px = mm_to_pixels(mm)
+        dirty_pixels?(image, 0, image.height-1, 0, px-1)
       end
 
-      def right_pixels(image, mm)
-        width_px = mm_to_pixels(mm)
-        x = image.columns - width_px
-        image.get_pixels(x, 0, width_px, image.rows)
+      def dirty_right_margin?(image, mm)
+        px = mm_to_pixels(mm)
+        offset = image.width - px - 1
+        dirty_pixels?(image, 0, image.height-1, offset, image.width-1)
       end
 
-      def bottom_pixels(image, mm)
-        width_px = mm_to_pixels(mm)
-        y = image.rows - width_px
-        image.get_pixels(0, y, image.columns, width_px)
+      def dirty_bottom_margin?(image, mm)
+        px = mm_to_pixels(mm)
+        offset = image.height - px - 1
+        dirty_pixels?(image, offset, image.height-1, 0, image.width-1)
       end
 
-      def dirty_pixels?(pixels)
-        pixels.any? do |p|
-          (p.cyan | p.magenta | p.yellow | p.black) > 0
+      def dirty_pixels?(image, row_start, row_end, column_start, column_end)
+        rows = (row_start..row_end).to_a
+        columns = (column_start..column_end).to_a
+
+        white = ChunkyPNG::Color::WHITE
+
+        rows.any? do |row|
+          columns.any? do |column|
+            image[column, row] != white
+          end
         end
       end
 

@@ -14,7 +14,8 @@ Gem::Specification.new do |s|
   s.files = Dir["lib/**/*"] + ["Rakefile", "README.md"]
   s.test_files = Dir["test/**/*"]
 
-  s.add_dependency "rmagick", "~> 2.13.2"
+  s.add_dependency "chunky_png", "~> 1.2.8"
+  s.add_dependency "oily_png", "~> 1.1.0"
 
   s.add_development_dependency "rake"
   s.add_development_dependency "test-unit"

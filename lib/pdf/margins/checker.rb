@@ -77,41 +77,45 @@ module PDF
 
       def dirty_top_margin?(image, mm)
         px = mm_to_pixels(mm)
-        return false if px.zero?
-        dirty_pixels?(image, 0, px-1, 0, image.width-1)
+        dirty_pixels?(image, 0, 0, image.width, px)
       end
 
       def dirty_left_margin?(image, mm)
         px = mm_to_pixels(mm)
-        return false if px.zero?
-        dirty_pixels?(image, 0, image.height-1, 0, px-1)
+        dirty_pixels?(image, 0, 0, px, image.height)
       end
 
       def dirty_right_margin?(image, mm)
         px = mm_to_pixels(mm)
-        return false if px.zero?
         offset = image.width - px - 1
-        dirty_pixels?(image, 0, image.height-1, offset, image.width-1)
+        dirty_pixels?(image, offset, 0, px, image.height)
       end
 
       def dirty_bottom_margin?(image, mm)
         px = mm_to_pixels(mm)
-        return false if px.zero?
         offset = image.height - px - 1
-        dirty_pixels?(image, offset, image.height-1, 0, image.width-1)
+        dirty_pixels?(image, 0, offset, image.width, px)
       end
 
-      def dirty_pixels?(image, row_start, row_end, column_start, column_end)
-        rows = (row_start..row_end).to_a
-        columns = (column_start..column_end).to_a
-
+      def dirty_pixels?(image, x, y, width, height)
         white = ChunkyPNG::Color::WHITE
+        found_dirty_pixel = false
 
-        rows.any? do |row|
-          columns.any? do |column|
-            image[column, row] != white
+        width.times do |x_offset|
+          break if found_dirty_pixel
+
+          height.times do |y_offset|
+            x_position = x + x_offset
+            y_position = y + y_offset
+
+            if image[x_position, y_position] != white 
+              found_dirty_pixel = true
+              break
+            end
           end
         end
+
+        return found_dirty_pixel
       end
 
     end

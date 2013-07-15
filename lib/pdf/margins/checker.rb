@@ -37,7 +37,11 @@ module PDF
 
           issues = []
 
-          Dir.glob("#{temp_dir_path}/*.png").each_with_index do |png_path, index|
+          files = Dir.glob("#{temp_dir_path}/*.png")
+          # ensure the files are sorted naturally
+          files = files.sort_by{ |f| f.split('/').last.to_i }
+
+          files.each_with_index do |png_path, index|
             image = ChunkyPNG::Image.from_file(png_path)
             page_number = index + 1
 
@@ -73,22 +77,26 @@ module PDF
 
       def dirty_top_margin?(image, mm)
         px = mm_to_pixels(mm)
+        return false if px.zero?
         dirty_pixels?(image, 0, px-1, 0, image.width-1)
       end
 
       def dirty_left_margin?(image, mm)
         px = mm_to_pixels(mm)
+        return false if px.zero?
         dirty_pixels?(image, 0, image.height-1, 0, px-1)
       end
 
       def dirty_right_margin?(image, mm)
         px = mm_to_pixels(mm)
+        return false if px.zero?
         offset = image.width - px - 1
         dirty_pixels?(image, 0, image.height-1, offset, image.width-1)
       end
 
       def dirty_bottom_margin?(image, mm)
         px = mm_to_pixels(mm)
+        return false if px.zero?
         offset = image.height - px - 1
         dirty_pixels?(image, offset, image.height-1, 0, image.width-1)
       end

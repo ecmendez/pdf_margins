@@ -76,4 +76,14 @@ class CheckerTest < Test::Unit::TestCase
     ], checker.issues
   end
 
+  test "PDF with all dirty margins being checked as pages with a margin width of 0" do
+    checker = PDF::Margins::Checker.new(pdf_path('16-page-mini.pdf'), 0, 0, 0, 0, false)
+    assert_equal [], checker.issues
+  end
+
+  test "PDF with all dirty margins being checked as spreads with a margin width of 0" do
+    checker = PDF::Margins::Checker.new(pdf_path('16-page-mini.pdf'), 0, 0, 0, 0, true)
+    assert_equal [], checker.issues
+  end
+
 end

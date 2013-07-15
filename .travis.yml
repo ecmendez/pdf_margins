@@ -3,6 +3,9 @@ rvm:
  - 1.9.3
  - 2.0.0
  - ruby-head
+matrix:
+  allow_failures:
+    - rvm: ruby-head
 before_install:
   - echo "yes" | sudo add-apt-repository ppa:mupdf/stable
   - sudo apt-get update -qq

@@ -1,4 +1,5 @@
 require 'pdf/margins/issue'
+require 'pdf/margins/errors'
 require 'chunky_png'
 require 'oily_png'
 require 'tmpdir'
@@ -33,7 +34,7 @@ module PDF
         begin
           # This produces greyscale PNGs - we throw the colour away because we
           # don't need it to check for margins.
-          system("mudraw -g -b 0 -r #{RESOLUTION} -o #{temp_dir_path}/%d.png #{file_path}") || raise
+          system("mudraw -g -b 0 -r #{RESOLUTION} -o #{temp_dir_path}/%d.png #{file_path}") || raise(PDF::Margins::MuDrawCommandError)
 
           issues = []
 

@@ -86,4 +86,10 @@ class CheckerTest < Test::Unit::TestCase
     assert_equal [], checker.issues
   end
 
+  test "shelling out to mudraw fails" do
+    checker = PDF::Margins::Checker.new(pdf_path('bottom-margin-only.pdf'), 15, 15, 15, 15)
+    checker.expects(:system).returns(false)
+    assert_raises(PDF::Margins::MuDrawCommandError) { checker.issues }
+  end
+
 end

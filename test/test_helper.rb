@@ -1,5 +1,6 @@
 require 'test/unit'
 require 'pdf/margins'
+require 'mocha/setup'
 
 class Test::Unit::TestCase
 

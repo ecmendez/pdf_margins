@@ -3,6 +3,7 @@ require 'pdf/margins/errors'
 require 'chunky_png'
 require 'oily_png'
 require 'tmpdir'
+require 'logger'
 
 module PDF
   module Margins
@@ -15,21 +16,29 @@ module PDF
       SCALE_MULTIPLIER = 1 
       RESOLUTION = DEFAULT_RESOLUTION * SCALE_MULTIPLIER
 
-      attr_reader :file_path, :top_margin, :right_margin, :bottom_margin, :left_margin, :spreads
+      attr_reader :file_path, :logger
+      attr_reader :top_margin, :right_margin, :bottom_margin, :left_margin, :spreads
 
       # Dimensions are in mm, to be converted to PDF points later. Pass spreads
       # as true to check left and right margins of spreads, not pages.
-      def initialize(file_path, top_margin, right_margin, bottom_margin, left_margin, spreads=false)
+      def initialize(file_path, options = {})
         @file_path     = file_path
-        @top_margin    = top_margin
-        @right_margin  = right_margin
-        @bottom_margin = bottom_margin
-        @left_margin   = left_margin
-        @spreads       = spreads
+        @keep_pngs     = options.delete(:keep_pngs) || false
+
+        @top_margin    = options.delete(:top_margin) || 0
+        @right_margin  = options.delete(:right_margin) || 0
+        @bottom_margin = options.delete(:bottom_margin) || 0
+        @left_margin   = options.delete(:left_margin) || 0
+        @spreads       = options.delete(:spreads) || false
+
+        @logger = options.delete(:logger) || Logger.new(STDOUT).tap do |l|
+          l.level = options.delete(:log_level) || Logger::WARN
+        end
       end
 
       def issues
         temp_dir_path = Dir.mktmpdir("pdf_margins")
+        logger.debug("Rendering PNGs into #{temp_dir_path}")
 
         begin
           # This produces greyscale PNGs - we throw the colour away because we
@@ -39,12 +48,17 @@ module PDF
           issues = []
 
           files = Dir.glob("#{temp_dir_path}/*.png")
+          file_count = files.length
           # ensure the files are sorted naturally
           files = files.sort_by{ |f| f.split('/').last.to_i }
 
+          logger.debug("Rendered #{file_count} files")
+
           files.each_with_index do |png_path, index|
-            image = ChunkyPNG::Image.from_file(png_path)
             page_number = index + 1
+            logger.debug("Rendering page #{page_number} from #{png_path}")
+
+            image = ChunkyPNG::Image.from_file(png_path)
 
             if dirty_top_margin?(image, top_margin)
               issues << Issue.new(page_number, :top)
@@ -64,7 +78,8 @@ module PDF
           end
 
         ensure
-          FileUtils.remove_entry(temp_dir_path)
+          FileUtils.remove_entry(temp_dir_path) unless @keep_pngs
+          logger.info("PNG files kept at: #{temp_dir_path}") if @keep_pngs
         end
 
         return issues
@@ -108,8 +123,11 @@ module PDF
           height.times do |y_offset|
             x_position = x + x_offset
             y_position = y + y_offset
+            pixel      = image[x_position, y_position]
 
-            if image[x_position, y_position] != white 
+            if pixel != white 
+              hex = ChunkyPNG::Color.to_hex(pixel)
+              logger.debug("Found #{hex} pixel at #{x_position},#{y_position}")
               found_dirty_pixel = true
               break
             end

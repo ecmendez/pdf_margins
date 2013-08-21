@@ -79,7 +79,7 @@ module PDF
 
         ensure
           FileUtils.remove_entry(temp_dir_path) unless @keep_pngs
-          logger.info("PNG files kept at: #{temp_dir_path}") if @keep_pngs
+          logger.info("PNG files kept at: #{temp_dir_path}") if @keep_pngs
         end
 
         return issues

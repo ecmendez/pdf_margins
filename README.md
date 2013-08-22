@@ -27,9 +27,12 @@ Written by [Tom Taylor] [3], [Newspaper Club] [4].
 Example
 --
 
-    # accepts a `spreads` boolean which assumes margin dimensions refer to
-    # spreads, and so alternates which pages we check left and right margins on
-    spreads = true
-    # measurements in mm, ordered top, right, bottom, left (same as CSS)
-    checker = PDF::Margins::Checker.new('example.pdf', 10, 10, 10, 10, spreads)
+    # Accepts a `spreads` option which assumes margin dimensions refer to
+    # spreads, and so alternates which pages we check left and right margins
+    # on. Measurements are in mm, defaulting to 0 unless specified.
+    checker = PDF::Margins::Checker.new('example.pdf', top_margin: 10, 
+                                                       right_margin: 10, 
+                                                       bottom_margin: 10, 
+                                                       left_margin: 10, 
+                                                       spreads: true)
     puts checker.issues.inspect
